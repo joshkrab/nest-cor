@@ -3,7 +3,6 @@ import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 import {AppModule} from './app.module'
 import {ValidationPipe} from './pipes/validation.pipe';
 
-
 // Created main function for running server:
 async function start() {
 	// Outside variable or 5000:
