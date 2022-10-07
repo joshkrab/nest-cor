@@ -19,7 +19,7 @@ export class UsersController {
 	@ApiOperation({summary: 'User creating'})
 	// Describe response data: 
 	@ApiResponse({status: 200, type: User, })
-	// @UsePipes(ValidationPipe)
+	@UsePipes(ValidationPipe)
 	@Post()
 	// We accept this type in the body
 	create(@Body() userDto: CreateUserDto) {
