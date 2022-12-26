@@ -1,0 +1,392 @@
+00 Insntalling ---------------------------------------------------------------------------------------------------------------------------
+
+	- sudo npm i -g @nestjs/cli
+	- nest new project-name
+	- nest new --strict project-name - for ts strict mode
+
+01 По відео уроку -----------------------------------------------------------------------------------------------------------------
+
+	- створив проект server-yt
+	- видалили всі файли з папкі src 
+	- видалили папку test
+	- також видалили файли лінтера і прітіра, щоб не відволікало
+
+	- Створили головний файл main.ts, далі пишу коменти там
+	створили структуру, в якій запускаємо сервер з модулем всередині, тобто створюємо далі файл цього модуля:
+	- Створили файл app.module.ts
+	- Перевірили запуск: npm run start:dev
+
+	- Створюємо перший контроллер: app.controller.ts
+	- Щоб цей контроллек працював, його записуємо в модулі, в параметрах декоратора @Module
+	- Перевіряємо в браузері, що отримали відповідь - все робе
+	- Автор каже, що створювати роутери як в експресі немає необхідності
+
+	- Providers - next field in module, це якась логіка, яка може використовуватись в інших компонентах
+	- Створюємо файл app.service.ts, в середині підписуємо фукнцію декоратором @Injectable(),
+	щоб потім підключати в контроллерах.
+	- Тут може бути логіка валідації, оброблення даних з бд і тд.
+	- Імпортували його також в файл модуля, в параметри декоратора @Module
+	- Тепер ми його приймаємо в конструкторі класа контроллера і там одразу описуємо тип
+
+02 Лекція ----------------------------------------------------------------------------------------------------------------------------------
+
+	- Фреймворк - архітектура/структура/каркас проекта
+	- Декоратори - почитати, на класи або члени класів
+	- Dependency injection - налаштування об'єкту, коли поля задаються зовнішньою сущностью. 
+	Об'єкти налаштовуються іншими об'єктами...
+
+	- всі асінк методи обертаємо в дженерик проміс (приклад в презентації)
+
+03 Work with database ------------------------------------------------------------------------------------------------------------------------
+
+	- Insntalling orm sequelize for postgress: 
+		- npm install --save @nestjs/sequelize sequelize sequelize-typescript
+		- npm install --save pg pg-hstore
+		- npm install --save-dev @types/sequelize
+
+	- Щоб імпортувати модуль sequelize (беремо його з сайту документації), нам треба імпортувати його в наш файл модуля
+	- Додаємо там поле imports: []
+
+	- Встановил постгрес та pgAdmin на комп
+	- Знайшов сервіс для хостінгу дб та підключення в pgAdmin
+	- Запустили проект, бд працює
+
+	- Автор видаляє файли сервіса і контроллера, щоб створити структура, я поки що залишу, там конспект
+
+	---------------- TypeORM ----------------------------------------------
+
+	- npm install --save @nestjs/typeorm typeorm
+	- npm install reflect-metadata --save (import "reflect-metadata") - хз шо воно таке :)
+	- npm install @types/node --save-dev
+	- npm install --save pg pg-hstore postgres
+
+	- synchronize: false, for production - migrations
+	
+04 Users module -----------------------------------------------------------------------------------------------------------------
+
+	- Created users folder: nest generate module users
+	- Also it was imported automatically in main module file
+	- Also made: nest generate controller users, nest generate service users
+	- These two files were imported in user.module file automatically
+	- Deleted two red test files in users directory
+
+05 npm i @nestjs/config ENV ---------------------------------------------------------------------------------------------------------
+
+	- Creating file for database connection data
+	- Install npm i @nestjs/config
+	- In main module file, add to imports: ConfigModule - specified the path to the file there
+	- In root project folder, we created .env
+	- Removed there db config
+
+	- Ussually we use two different files: created .development.env and .production.env 
+
+	- Insall npm i cross-env - for running env in scripts
+	- In package.json edit scripts: added cross-env NODE_ENV=development in two scripts
+	- We added global variable NODE_ENV
+	- In main module file wrote: envFilePath: `.${process.env.NODE_ENV}.env`,
+
+06 User Model -----------------------------------------------------------------------------------------------------------------------
+
+	- In users folder we created file users.model.ts - created model there
+	- In app.module added our model in models: []
+	- In user.module added imports: []
+
+07 User Service ---------------------------------------------------------------------------------------------------------------------
+
+	- Connect model in servise file
+	- Connect dto file, dto - simply object with fields only, for exchange data beetween files.
+
+	- Then we conected service in user.controller
+	- Then tested in postman
+
+08 Documentation Rest Api -------------------------------------------------------------------------------------------------------------
+
+	- npm i @nestjs/swagger swagger-ui-express
+	- Configure swagger in the file main.ts
+	- Add decorators @ApiOperation({}), @ApiResponse({}) in user.controller
+	- Add decorators @ApiProperty({}) in user.model for every field
+	- Add decorators @ApiProperty({}) in create-user.dto.ts for post body description
+
+	- To group methods in swagger, add a decorator @ApiTags('Users') to the file user.controller
+
+09 User roles module ------------------------------------------------------------------------------------------------------------------
+
+	- nest generate module roles
+	- nest generate service roles
+	- nest generate controller roles
+	- Copy in roles older model file from users, and edit model for roles
+	- Connect Role model in role.module and in app.module
+
+10 Connection between tables - Many to Many ------------------------------------------------------------------------------------------------
+
+	- In this case, creating temporary table, where we can see - which roles for user
+	- In role model file, we write decorator: @BelongsToMany()
+	- In user model file, we write decorator: @BelongsToMany()
+	- We connect these tables through third table UserRoles
+
+	- Added in roles module User model in imports
+	- Added in users module Role model in imports
+
+	- In roles folder create user-roles.model.ts
+	- We marked outside fields with decorator @ForeignKey(()=>Role)
+	- imported this models in every module files
+
+11 Role service --------------------------------------------------------------------------------------------------------------------------
+
+	- Write two methods like in users.service
+	- Write roles.controller
+
+	- Add default role for user - in users.service.ts
+	- Injectes role service in constructor
+	- Add RoleModule in users.module in imports and also in exports in roles.module
+
+12 Authorization -----------------------------------------------------------------------------------------------------------------
+
+	- nest generate module auth
+	- nest generate controller auth
+	- nest generate service auth
+
+	- npm i @nestjs/jwt bcryptjs
+
+	- For normal work - imported UsersModule in auth.module in imports
+	and exported UserService in user.module
+
+	- Register Jwt module in auth.module
+
+	- Для регістрації рекомендується використовувати passport js, але ми зараз розробляємо самі для практики
+
+	- Wrote register service and generate token, tested in postman
+
+	- Лекція ----------------------------------------------------------------------------------------------------
+
+	- passport - бібліотека і мідлвара. 
+
+13 Guards, CanActivate --------------------------------------------------------------------------------------------------------------------
+
+	- If user is not authorized, he can't get the resource
+	- Create jwt-auth.guard.ts
+
+	- In auth.module and user.module imported modules of each other with forwardRef(() => AuthModule)
+	- Use it in user.controller
+	- Wrote decorator @UseGuards(JwtAuthGuard) with jor guard function
+	- Tested in postman
+
+14 Checking user roles ---------------------------------------------------------------------------------------------------------------------
+
+	- In auth folder crate roles-auth.decorator.ts and role.guard.ts
+	- Copy end edit logic from jwt-auth.guard.ts
+	- Wrote code in roles-auth.decorator.ts
+	- Wrote code in role.guard.ts
+
+	- Use it in users.controller
+
+15 Add endpoint for adding roles ----------------------------------------------------------------------------------------------------------
+
+	- Create addpoint in users.controller
+	- Create addRole function in user.service
+
+16 Pipes, Class-validator -----------------------------------------------------------------------------------------------------------------
+
+	- Pipes - functions for data conversion (string to number), and for validation input data
+
+	- npm i class-validator class-transformer
+
+	- Create validation for create-user.dto and add-role.dto
+	- Add decorators/validators for fields: @IsString(), @Length(), @IsEmail()
+
+	- create validation.pipe file
+	- create exceptions folder for custom errors
+	- Add pipe function to addUser in controller - @UsePipes()
+	- Then removed it globally in main.ts
+
+	- Замість свого validation.pipe файлу, я просто використав вбудований @UsePipes(ValidationPipe),
+	та валідація працює, тільки описав в дто
+
+17 Work with files, static, Posts module, One to Many ----------------------------------------------------------------------------------------------
+
+	- nest generate module posts
+	- nest generate controller posts
+	- nest generate service posts
+
+	- Create posts for uders
+	- Create post.model, copy and edit from users
+	- Create connect in models post and user
+	- All models imported in app.module in DB settings
+	- Imported in post module in imports: [ SequelizeModule.forFeature([User, Post]) ]
+
+	- Wrote posts.controller logic
+	- Add decorator for files @UploadedFile()
+
+	- nest generate module files
+	- without controller
+	- nest generate service files
+
+	- Imported file module in post module
+	- Now we can inject FileService in PostService
+
+	- npm i uuid - for file names
+	- npm install --save @nestjs/serve-static
+	- In app.module added ServeStaticModule
+
+	- Now we can see our file in browser: http://localhost:5000/4a6c5fdb-5d38-49c5-b1a4-c0be856241b9.jpg
+
+18 Docker ---------------------------------------------------------------------------------------------------------------------------------
+
+	- 1:34:00
+
+19 Миграції: TypeORM -----------------------------------------------------------------------------------------------------------------------------
+
+	- npm i cross-var
+	- Додав скріпти: 
+		"typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli -d src/config/migrations.config.ts",
+    "migration:create": "cross-var ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli migration:create ./src/migrations/$npm_config_name",
+    "migration:generate": "cross-var npm run typeorm -- migration:generate ./src/migrations/$npm_config_name",
+    "migration:run": "npm run build && npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert"
+		
+	- npm run migration:create --name=Test1 - робить
+
+	- Скинув версію: "typeorm": "0.2.44" -------------------------------------------------------------------------------
+	- та зробив по відео:
+	- заповнив .env, додав скріпти
+	- Створюється пуста міграція, як болванка, щоб потім заповнити даними:
+	- npm run migration:create init
+	- npm run migration:run - створилася таблиця migrations, в якій будуть зберігатися міграції
+
+	- npm run migration:generate User - створили міграцію з описом усіх наших таблиць
+	- npm run migration:run - створило усі таблиці в бд (до цього треба було всі видалити)
+
+	Тобто як я зрозумів:
+	- Після будь яких змін в моделях/сутностях, ми генеруємо нову міграцію і ранимо її
+	- Якщо якась помилка після рану, то робимо down
+
+20 Mailing lection ---------------------------------------------------------------------------------------------------------------
+
+	- CashModule - стороння бібліотека, кеш менеджер - об'єкт зі значеннями, щоб щось доставати
+	- Приклади: ключі і значення в презентації
+	- Кешувати можна тільки get запит в контроллері
+
+
+	----mailer nodemailer ------------------------------------------------------------------------------------------------
+
+	- npm install --save @nestjs-modules/mailer nodemailer
+	- npm install --save-dev @types/nodemailer
+	- Describe Mail module in imports in appModule
+	- https://app.sendgrid.com/guide?from=profile&integrate=true -> Create Single Sender -> verificate my IsEmail
+	- On site -> Email API -> Integration guide -> SMTP Relay
+	- My First API Key Name = MyNestApi -> create
+	- Configure your application -> MailerModule
+
+		- Щоб не протапило в спам використ проміжні сервери mailgun, sendgrid
+		- використати логінг щоб бачити що відсилається
+
+		- bull - бібл для черг черги :)
+		- mailtrap - для тестуванння, потім налаштувати sendgrid
+
+---- serialization - певеведення об'єктів жс в джсон
+
+	- scheduling - робити графік на якусь подію, наприклад вакуум в постгрес - очистити кеш (функції)
+
+
+-- SSR ------------------------------------------------------------------------------------------------------------------------------
+
+	- 
+
+-- Websockets ---------------------------------------------------------------------------------------------------------------------------
+
+	- socket.io 
+	- Observable - як проміс, тільки може давати не один реджект а декілька
+	- на вебсокітах обмін івентами
+	- WS - івентбейс, двусторонній
+
+- Nest and GraphQL ----------------------------------------------------------------------------------------------------------------------------
+
+	- мова запитів в веб, замість рест,
+	- використовують обидві http
+	- але всі запити по гет методу
+	- один ендпоінт (зазвичай), 
+	- строга схема (поля об'єкту), 
+	- Резолвер (контролер) - приймає квері по імені, та звертається по дереву json об'єкту
+	- Перевага - гнучкість, велика вкладеність (для монго і граф бд(...newfj...))
+	- два виду запитів query та mutation
+
+	- @Contex(): метаінформація - не предметна область(токен, )
+	
+	- @Mutation - пишеться в резолвері, шось створює, апдейтить, видаляє...
+	- синтаксис/семантика це форма/зміст
+
+	- @Subscription - використання івентів в апі. Використовує вебсокет. Підписуємося на івент.
+
+	- Примітиви - scalars, можна додавати свої, для json підключається окремий модуль нпм.
+
+	Вступ Артура:
+
+	GraphQL - це мова запитів у вебі, на якій був вибудований окремий стиль написання Web-API 
+	(який по аналогії називають GraphQL API). Його дуже часто ставлять в противагу REST API. 
+	Обидва ці стилі зазвичай використовують протокол HTTP
+	Обидва використовують в основному JSON як основний формат передачі даних
+
+	У всьому іншому, доступ до даних відбувається кардинально інакше:
+	GraphQL не використовує HTTP`шні семантичні методи: всі запити надсилаються через GET. 
+	GraphQL має свою класифікацію методів: замість того, щоб використовувати HTTP`шні POST, PUT, PATCH, GET і т.д.,
+	 ми використовуємо поняття Query i Mutation. Query - це запит, який лише дістає дані з API (аналог GET), 
+	 Mutation - запит, який змінює щось в стані API (аналог POST, PUT, PATCH, DELETE).
+	GraphQL API створюється на основі схеми, заданої вручну розробником, 
+	у ній описуються всі можливі сутності та запити до них.
+	В GraphQL у нас є лише один ендпоінт. Ми можемо налаштувати й більше, 
+	але зазвичай використовують лише один (/graphql). Цей ендпоінт, 
+	на відміну від REST’ового дуже гнучкий: якщо в REST ми вказуємо шлях на ендпоінт
+	 і конкретні параметри під цей ендпоінт, то в GraphQL (в рамках одного ендпоінта) ми вказуємо сутності,
+	  на які робимо запити, вказуємо, які атрибути цих сутностей ми хочемо отримати,
+		 і до цього всього можемо додавати будь-які параметри, як от для фільтрування чи пагінації. 
+	Те, що в REST API ми називаємо “контроллерами”, в GraphQL API називається “резолверами” (resolvers).
+
+	Якщо REST API`шці потрібно лише розібратись з маршрутизацією ендпоінтів та HTTP методів і обробкою параметрів,
+	 то GraphQL API має прочитати запит, визначити, чи це Query, чи Mutation, визначити сутності, 
+	 які зачіплені в запиті, викликати відповідний резолвер під сутність та повернути всі атрибути сутності,
+	  задані в запиті (відфільтрувавши при цьому зайві). Цим всім займається драйвер GraphQL, нам, як розробникам,
+		 необіхдно лише описати схему API`шки та написати резолвери під кожну сутність.
+
+	Суттєвих відмінностей у прикладному використанні немає. GraphQL API гнучкий, 
+	але лише в рамках дозволеного GraphQL драйвером, тоді як REST - простіший, 
+	але від того й має ширше використання. GraphQL дуже часто використовують в парі з 
+	графовими/документно-орієнтованими базами даних, через схожість структуризації даних. 
+	Ще один хороший юзкейс - публічний API, для якого важливі легкість в документуванні 
+	та гнучкість для клієнта (в публічного АРІ може бути багато клієнтів, і у кожного можуть бути специфічні запити).
+
+	- Nest - GraphQL - MongoDB ---------------------------------------------------------------------------------------------------------
+
+	- @Directive() - декоратор на кверю або на філд, її треба описати
+
+	- Плагіни - івент лісенери
+
+	- Інтерфейси - опис 
+
+- Lection: Tests ------------------------------------------------------------------------------------------------------------------------------
+
+	- мануальне - людина руками тестує апку, всі можливі кейси
+	- автоматизоване - пишуть програми, яка тестує діючу програму
+
+	- unit tests - юніт(функція)
+	- integration tests - юніти складаються в купу і тестуються, наприклад модуль
+	- system - тест апки, надсилання запитів і тд.
+
+	Unit tessting "FIRST" principles
+
+	- Fast
+	- Isolated
+	- Repeatable
+	- Self-verifying
+	- Timely
+
+	Jest - 
+
+- Amazon web services - багато сервісів, щоб щось захостити і тд. 
+
+	- Beanstalk - сетап для деплою сервера через амазон
+	- EC2 - інстанс серверу
+	- S3 - сховище даних, зберігання файлів
+
+- Структура даних -------------------------------------------------------------------------------------------------
+
+	- 
